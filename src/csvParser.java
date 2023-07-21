@@ -5,7 +5,7 @@ import java.util.List;
 
 public class csvParser {
     public static List<Task> readFile() throws IOException {
-        List<String> lines = processFile("/home/kataha/IdeaProjects/To-Do List Application/Tasks.csv");
+        List<String> lines = processFile("./Tasks.csv");
         List<Task> Tasks = new ArrayList<>();
         for (String line : lines) {
             String[] parts = line.split("\\,");
@@ -49,7 +49,7 @@ public class csvParser {
 
     public static void createFile() {
         try {
-            File myObj = new File("/home/kataha/IdeaProjects/To-Do List Application/Tasks.csv");
+            File myObj = new File("./Tasks.csv");
             if (myObj.createNewFile()) {
                 System.out.println("File created: " + myObj.getName());
             } else {
