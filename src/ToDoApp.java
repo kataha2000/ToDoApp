@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class ToDoApp {
@@ -15,11 +16,31 @@ public class ToDoApp {
 
 
         String input;
+        outerLoop:
         while ((input = keyboard.readLine()) != null) {
+            input = input.toLowerCase();
             switch (input) {
-                case "Help" ->
-                        System.out.println("Add task, Tasks, Edit task, Delete task, Delete all tasks, Tasks due date");
-                case "Add task" -> {
+                case "help" ->
+                        System.out.println("Add - add a new task \nTasks - show all tasks \nEdit - edit task \nDelete - delete a task \nDelete all - delete all tasks \nTasks due date - show tasks by due date \nCategory - show tasks with certain category \nExit - close program");
+
+                case "category" -> {
+                    boolean find = false;
+                    System.out.println("Enter category:");
+                    int index = 0;
+                    String input1 = keyboard.readLine().toLowerCase(Locale.ROOT);
+                    for (Task task : tasks) {
+                        if (Objects.equals(input1, task.category.toLowerCase())) {
+                            System.out.println((index + 1) + ", " + task.title + ", " + task.description + ", " + task.date + ", " + task.status + ", " + task.category);
+                            index++;
+                            find = true;
+                        }
+                    }
+                    if (!find) {
+                        System.out.println("No tasks in this category");
+                    }
+
+                }
+                case "add" -> {
                     LocalDate date = null;
 
                     System.out.println("Enter title:");
@@ -50,7 +71,7 @@ public class ToDoApp {
                     }
                     System.out.println("Task created successfully");
                 }
-                case "Tasks" -> {
+                case "tasks" -> {
                     tasks = csvParser.readFile();
                     int index = 0;
                     if (tasks.size() < 1) {
@@ -63,16 +84,12 @@ public class ToDoApp {
                     }
                 }
 
-                case "Tasks due date" -> {
+                case "tasks due date" -> {
                     tasks = csvParser.readFile();
                     if (tasks.size() < 1) {
                         System.out.println("Empty");
                     } else {
-                        System.out.println("Newest or oldest on top?");
-                        String input1 = keyboard.readLine();
-                        int choice = Objects.equals(input1, "Oldest") ? 1 : -1;
-
-                        tasks.sort((task1, task2) -> task1.date.compareTo(task2.date) * choice);
+                        tasks.sort((task1, task2) -> task1.date.compareTo(task2.date) * -1);
 
                         for (Task task : tasks) {
                             System.out.println(task.title + ", " + task.description + ", " + task.date + ", " + task.status + ", " + task.category);
@@ -80,37 +97,50 @@ public class ToDoApp {
                     }
                 }
 
-                case "Edit task" -> {
+                case "edit" -> {
                     if (tasks.size() < 1) {
                         System.out.println("Empty");
                     } else {
-                        System.out.println("Enter index of task");
-                        int i = Integer.parseInt(keyboard.readLine()) - 1;
+                        int i;
+                        System.out.println("Enter index of task:");
+                        try {
+                            i = Integer.parseInt(keyboard.readLine()) - 1;
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid index");
+                            continue;
+                        }
                         System.out.println("What do you want to change?");
-                        String input1 = keyboard.readLine();
+                        String input1 = keyboard.readLine().toLowerCase(Locale.ROOT);
                         switch (input1) {
-                            case "Title" -> {
-                                System.out.println("Enter new title");
+                            case "title" -> {
+                                System.out.println("Enter new title:");
                                 tasks.get(i).title = keyboard.readLine();
                                 csvParser.writeFile(tasks);
                             }
-                            case "Description" -> {
-                                System.out.println("Enter new description");
+                            case "description" -> {
+                                System.out.println("Enter new description:");
                                 tasks.get(i).description = keyboard.readLine();
                                 csvParser.writeFile(tasks);
                             }
-                            case "Date" -> {
-                                System.out.println("Enter new date year-month-day");
-                                tasks.get(i).date = LocalDate.parse(keyboard.readLine());
+                            case "date" -> {
+                                LocalDate date = null;
+                                System.out.println("Enter date year-month-day:");
+                                while (date == null) {
+                                    try {
+                                        date = LocalDate.parse(keyboard.readLine());
+                                    } catch (DateTimeParseException e) {
+                                        System.out.println("Invalid date, try again");
+                                    }
+                                }
                                 csvParser.writeFile(tasks);
                             }
-                            case "Status" -> {
-                                System.out.println("Enter new status");
+                            case "status" -> {
+                                System.out.println("Enter new status:");
                                 tasks.get(i).status = keyboard.readLine();
                                 csvParser.writeFile(tasks);
                             }
-                            case "Category" -> {
-                                System.out.println("Enter new category");
+                            case "category" -> {
+                                System.out.println("Enter new category:");
                                 tasks.get(i).category = keyboard.readLine();
                                 csvParser.writeFile(tasks);
                             }
@@ -119,28 +149,30 @@ public class ToDoApp {
                     }
                 }
 
-                case "Delete task" -> {
-                    System.out.println("Enter index of task");
-                    int i = Integer.parseInt(keyboard.readLine()) - 1;
-                    if (i + 1 > tasks.size() ) {
+                case "delete" -> {
+                    int i;
+                    System.out.println("Enter index of task:");
+                    try {
+                        i = Integer.parseInt(keyboard.readLine()) - 1;
+                    } catch (NumberFormatException e) {
                         System.out.println("Invalid index");
-                    } else {
-                        System.out.println("Are you sure?");
-                        String input1 = keyboard.readLine();
-                        switch (input1) {
-                            case "Yes" -> {
-                                tasks.remove(i);
-                                csvParser.writeFile(tasks);
-                            }
-                            case "No" -> {
-
-                            }
-                        }
-                        System.out.println("Task was deleted");
+                        continue;
                     }
+                    System.out.println("Are you sure?");
+                    String input1 = keyboard.readLine();
+                    switch (input1) {
+                        case "Yes" -> {
+                            tasks.remove(i);
+                            csvParser.writeFile(tasks);
+                        }
+                        case "No" -> {
+
+                        }
+                    }
+                    System.out.println("Task was deleted");
                 }
 
-                case "Delete all tasks" -> {
+                case "delete all" -> {
                     if (tasks.size() < 1) {
                         System.out.println("Empty");
                     } else {
@@ -159,6 +191,10 @@ public class ToDoApp {
                         }
                         System.out.println("Tasks was deleted");
                     }
+                }
+
+                case "exit" -> {
+                    break outerLoop;
                 }
 
                 default -> {
